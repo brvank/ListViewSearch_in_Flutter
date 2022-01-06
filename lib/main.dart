@@ -74,7 +74,7 @@ class _MyAppState extends State<MyApp> {
                     } else {
                       int strLength = str.length;
                       controller.showOrNot.value[i].value = false;
-                      for (int j = 0; j < fruit.length - strLength; j++) {
+                      for (int j = 0; j <= fruit.length - strLength; j++) {
                         if (str == fruit.substring(j, j + strLength)) {
                           controller.showOrNot.value[i].value = true;
                           break;
