@@ -1,11 +1,31 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:ui_app/controller.dart';
+import 'dart:isolate';
 
-void main() {
+import 'package:connectivity/connectivity.dart';
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:ui_app/NetworkCheck/jarvis_network_connectivity.dart';
+import 'package:ui_app/NetworkCheck/jarvis_network_connectivity_controller.dart';
+import 'package:ui_app/NetworkCheck/network_binding.dart';
+import 'package:ui_app/jarvis_video_player/jarvis_video_player_ui.dart';
+import 'package:ui_app/myap.dart';
+
+void main(){
   runApp(GetMaterialApp(
-    title: 'Fruits',
-    home: MyApp(),
+    initialBinding: NetworkBinding(),
+    theme: ThemeData(
+      brightness: Brightness.light
+    ),
+    darkTheme: ThemeData(
+      brightness: Brightness.dark
+    ),
+    title: 'My App',
+    home: Scaffold(
+      appBar: AppBar(
+        title: Text('Jarvis Video Player'),
+      ),
+      body: JarvisVideoPlayerUI(),
+    ),
   ));
 }
 
@@ -17,220 +37,81 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late Controller controller;
 
-  TextEditingController _editingController = TextEditingController();
+  late NetworkConnectivityManager _networkConnectivityManager;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
-    try {
-      controller = Get.find();
-    } catch (e) {
-      print(e);
-      controller = Get.put(Controller());
+
+    try{
+      print(super.initState.toString());
+    }catch(e){
+      print('error');
     }
-    controller.putFruits([
-      'banana',
-      'mango',
-      'apple',
-      'guava',
-      'cherry',
-      'orange',
-      'tomato',
-      'carrot',
-      'cheeku',
-      'grapes'
-    ]);
+
+    try{
+      _networkConnectivityManager = Get.find();
+    }catch(e){
+      print('don"t find --');
+      _networkConnectivityManager = Get.put(NetworkConnectivityManager());
+    }
+
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fruits'),
+        title: Text('My App'),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //for search bar
-          Container(
-            child: ListTile(
-              title: TextFormField(
-                controller: _editingController,
-                onChanged: (str) {
-                  if (str.length == 0) {
-                    for (int i = 0;
-                        i < controller.showOrNot.value.length;
-                        i++) {
-                      controller.showOrNot.value[i].value = true;
-                    }
-                    return;
-                  }
-                  //TODO: filter code here
-                  for (int i = 0; i < controller.fruitsList.value.length; i++) {
-                    String fruit = controller.fruitsList.value[i];
-                    if (str.length > fruit.length) {
-                      controller.showOrNot.value[i].value = false;
-                    } else {
-                      int strLength = str.length;
-                      controller.showOrNot.value[i].value = false;
-                      for (int j = 0; j <= fruit.length - strLength; j++) {
-                        if (str == fruit.substring(j, j + strLength)) {
-                          controller.showOrNot.value[i].value = true;
-                          break;
-                        } else {
-                          continue;
-                        }
-                      }
-                    }
-                  }
-                  //upto here
-                },
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                child: Center(child: CircularProgressIndicator(strokeWidth: 4,color: Colors.red,backgroundColor: Color(0x00ffffff),),),
+                width: 400,
+                height: 400,
               ),
-              trailing: InkWell(
-                child: Icon(
-                  Icons.clear,
-                ),
-                onTap: () {
-                  _editingController.clear();
-                  for (int i = 0; i < controller.fruitsList.value.length; i++) {
-                    controller.showOrNot.value[i].value = true;
-                  }
-                },
+              SizedBox(
+                child: Center(child: CircularProgressIndicator(strokeWidth: 4,color: Colors.blue,backgroundColor: Color(0x00ffffff),),),
+                width: 150,
+                height: 150,
               ),
-            ),
+            ],
           ),
-          //for select all
-          Container(
-            child: ListTile(
-              title: Text(
-                'Select All',
-                style: TextStyle(color: Colors.blue),
-              ),
-              leading: Obx(() => Checkbox(
-                  value: controller.allSelected.value,
-                  onChanged: (state) {
-                    controller.allSelected.value = state!;
-                    for (int i = 0;
-                        i < controller.fruitsList.value.length;
-                        i++) {
-                      controller.checkStatusList.value[i].value = state;
-                    }
-                  })),
+          BottomSheet(onClosing: (){}, builder: (context){
+            return Container(
+              child: Text('this is for demo only'),
+            );
+          }),
+          InkWell(
+            child: Icon(
+              Icons.arrow_forward,
+              size: 30,
             ),
+            onTap: (){
+              Get.to(MyHomePage());
+            },
           ),
-          Expanded(
-              child: Obx(() => ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: controller.fruitsList.value.length,
-                  itemBuilder: (context, index) {
-                    return Obx(() => controller.showOrNot.value[index].value
-                        ? ListTile(
-                            title: Text(controller.fruitsList.value[index]),
-                            leading: Checkbox(
-                                value: controller
-                                    .checkStatusList.value[index].value,
-                                onChanged: (bool? state) {
-                                  controller
-                                          .checkStatusList.value[index].value =
-                                      !controller
-                                          .checkStatusList.value[index].value;
-                                  //finally checking if all selected or not
-                                  controller.allSelected.value = allChecked();
-                                }),
-                          )
-                        : SizedBox());
-                  })))
+          FaIcon(FontAwesomeIcons.bell, color: Colors.black54,),
+          FaIcon(FontAwesomeIcons.bell, color: Colors.blue,),
+          FaIcon(FontAwesomeIcons.bellSlash, color: Colors.orange,),
+          FaIcon(FontAwesomeIcons.conciergeBell, color: Colors.blue,),
+          FaIcon(FontAwesomeIcons.hamburger, color: Colors.orange,),
+          FaIcon(FontAwesomeIcons.hamburger, color: Colors.blue,),
+          FaIcon(FontAwesomeIcons.diceThree, color: Colors.orange,),
+          FaIcon(FontAwesomeIcons.dice, color: Colors.blue,),
+          FaIcon(FontAwesomeIcons.camera, color: Colors.orange,),
+          FaIcon(FontAwesomeIcons.camera, color: Colors.blue,),
+          FaIcon(FontAwesomeIcons.cameraRetro, color: Colors.orange,),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          var temp = countChecks();
-          Get.to(Result(),
-              arguments: [temp, false],
-              transition: Transition.rightToLeft,
-              duration: Duration(milliseconds: 500));
-        },
-        child: Icon(Icons.shopping_cart),
       ),
     );
   }
 
-  bool countChecks() {
-    bool temp = false;
-    for (int i = 0; i < controller.checkStatusList.value.length; i++) {
-      if (controller.checkStatusList.value[i].value) {
-        if (!temp) {
-          temp = true;
-          controller.result.value = '';
-        }
-        controller.result.value += controller.fruitsList.value[i] + '\n';
-      }
-    }
-    return temp;
-  }
-
-  bool allChecked() {
-    for (int i = 0; i < controller.fruitsList.value.length; i++) {
-      if (controller.showOrNot.value[i].value) {
-        if (controller.checkStatusList.value[i].value) {
-          continue;
-        } else {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  void searchInFruitsList() {}
-}
-
-class Result extends StatefulWidget {
-  const Result({Key? key}) : super(key: key);
-
-  @override
-  _ResultState createState() => _ResultState();
-}
-
-class _ResultState extends State<Result> {
-  Controller controller = Get.find();
-  var arg = Get.arguments;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Cart'),
-        ),
-        body: Center(
-          child: arg[0]
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Your Cart',
-                      style: TextStyle(color: Colors.blue, fontSize: 20),
-                    ),
-                    Text(
-                      controller.result.value,
-                      style: TextStyle(color: Colors.black38, fontSize: 16),
-                    )
-                  ],
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Empty',
-                      style: TextStyle(color: Colors.red, fontSize: 20),
-                    ),
-                    Text(
-                      'No items selected!',
-                      style: TextStyle(color: Colors.black, fontSize: 16),
-                    )
-                  ],
-                ),
-        ));
-  }
 }

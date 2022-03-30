@@ -30,6 +30,10 @@ dependencies:
   flutter:
     sdk: flutter
   get:
+  font_awesome_flutter:
+  connectivity:
+  dio:
+  video_player:
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -46,7 +50,6 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
-  get:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
